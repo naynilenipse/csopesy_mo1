@@ -2,16 +2,20 @@
 #include <iostream>
 
 int main() {
-    Scheduler s(4, false, 5, 0);
+    Scheduler s(2, false, 5, 0);
     s.addProcess(std::make_shared<MockProcess>("p01", 3));
-    s.addProcess(std::make_shared<MockProcess>("p02", 6));
-    s.addProcess(std::make_shared<MockProcess>("p03", 6));
+    s.addProcess(std::make_shared<MockProcess>("p02", 8));
+    s.addProcess(std::make_shared<MockProcess>("p03", 8));
     s.start();
-    for (int i = 0; i < 8; i++) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        std::cout << "  -> used " << s.getCoresUsed()
-                << ", available " << s.getCoresAvailable()
-                << ", util " << s.getCpuUsage() << "%\n";
-    }
-    s.stop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(550));
+
+    std::cout << "Running processes:\n";
+    for (const ProcessInfo& p : s.getRunningProcesses())
+        std::cout << p.name << "  (" << p.createdAt << ")  Core: " << p.coreId
+                << "  " << p.done << " / " << p.total << "\n";
+
+    std::cout << "\nFinished processes:\n";
+    for (const ProcessInfo& p : s.getFinishedProcesses())
+        std::cout << p.name << "  (" << p.createdAt << ")  Finished  "
+                << p.done << " / " << p.total << "\n";
 }
