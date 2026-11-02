@@ -59,13 +59,15 @@ public:
     std::string getName() const { return name_; }
 
     // ---- Read-only views ------------------------------------------------
+    // getInstructionsDone / getTotalInstructions / getCreatedAt feed the
+    // scheduler's getRunningProcesses() and getFinishedProcesses().
     int getId() const { return id_; }
     State getState() const { return state_.load(std::memory_order_acquire); }
     int getCore() const { return core_.load(std::memory_order_acquire); }  // -1 when off-core
-    std::uint64_t getCurrentLine() const { return executed_.load(std::memory_order_acquire); }
-    std::uint64_t getTotalLines() const { return totalLines_; }
-    std::time_t getCreatedAt() const { return createdAt_; }
-    std::time_t getFinishedAt() const { return finishedAt_.load(std::memory_order_acquire); }
+    std::uint64_t getInstructionsDone() const { return executed_.load(std::memory_order_acquire); }
+    std::uint64_t getTotalInstructions() const { return totalLines_; }
+    std::string getCreatedAt() const { return formatTime(createdAt_); }    // MM/DD/YYYY HH:MM:SSAM
+    std::time_t getCreatedTime() const { return createdAt_; }               // raw, for sorting
 
     std::vector<LogEntry> getLogs() const;            // snapshot copy
     std::string formatLog(const LogEntry& e) const;   // (MM/DD/YYYY HH:MM:SSAM) Core:0 "msg"
@@ -110,7 +112,6 @@ private:
     std::atomic<std::uint64_t> wakeTick_{0};
     std::atomic<int> core_{-1};
     mutable std::atomic<State> state_{State::Ready};
-    std::atomic<std::time_t> finishedAt_{0};
 
     mutable std::mutex logMutex_;
     std::vector<LogEntry> logs_;

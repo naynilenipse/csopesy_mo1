@@ -91,7 +91,6 @@ void Process::finish() {
     std::vector<Instruction>().swap(code_);
     std::vector<std::uint16_t>().swap(vars_);
     ip_ = 0;
-    finishedAt_.store(std::time(nullptr), std::memory_order_release);
     state_.store(State::Finished, std::memory_order_release);
 }
 
@@ -149,7 +148,7 @@ std::string Process::formatLog(const LogEntry& e) const {
 std::string Process::smiReport() const {
     // Read progress before the logs so the line count never runs ahead of them.
     bool finished = isFinished();
-    std::uint64_t line = getCurrentLine();
+    std::uint64_t line = getInstructionsDone();
     std::vector<LogEntry> logs = getLogs();
 
     std::string out;

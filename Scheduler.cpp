@@ -164,6 +164,38 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
         std::lock_guard<std::mutex> lock(mtx);
         return countBusyCores() * 100 / numCPU;
     }
+
+    std::vector<ProcessInfo> Scheduler::getRunningProcesses() {
+        std::lock_guard<std::mutex> lock(mtx);
+        std::vector<ProcessInfo> result;
+        for (size_t i = 0; i < cores.size(); i++) {
+            if (cores[i].proc != nullptr) {
+                ProcessInfo info;
+                info.name = cores[i].proc->getName();
+                info.coreId = i;
+                info.done = cores[i].proc->getInstructionsDone();
+                info.total = cores[i].proc->getTotalInstructions();
+                info.createdAt = cores[i].proc->getCreatedAt();
+                result.push_back(info);
+            }
+        }
+        return result;
+    }
+
+    std::vector<ProcessInfo> Scheduler::getFinishedProcesses() {
+        std::lock_guard<std::mutex> lock(mtx);
+        std::vector<ProcessInfo> result;
+        for (const auto& proc : finished) {
+            ProcessInfo info;
+            info.name = proc->getName();
+            info.coreId = -1; 
+            info.done = proc->getInstructionsDone();
+            info.total = proc->getTotalInstructions();
+            info.createdAt = proc->getCreatedAt();
+            result.push_back(info);
+        }
+        return result;
+    }
 /*
     void Scheduler::printStatus() {
     std::cout << "Tick " << tick << ": ";

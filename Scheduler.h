@@ -7,11 +7,21 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <string>
+#include <cstdint>
 
 struct Core {
     std::shared_ptr<Process> proc = nullptr;
     int quantumUsed = 0;
     int delayLeft = 0;
+};
+
+struct ProcessInfo {
+    std::string name;
+    int coreId;
+    std::uint64_t done;
+    std::uint64_t total;
+    std::string createdAt;
 };
 
 class Scheduler {
@@ -25,6 +35,9 @@ public:
     int getCoresUsed();
     int getCoresAvailable();
     int getCpuUsage();
+
+    std::vector<ProcessInfo> getRunningProcesses();
+    std::vector<ProcessInfo> getFinishedProcesses();
     
     ~Scheduler();
     
