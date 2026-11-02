@@ -8,7 +8,7 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
         cores.resize(numCPU);
     }
 
-    void Scheduler::addProcess(std::shared_ptr<MockProcess> process) {
+    void Scheduler::addProcess(std::shared_ptr<Process> process) {
         std::lock_guard<std::mutex> lock(mtx);
         readyQueue.push_back(process);
     }
@@ -24,10 +24,12 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
             }
         }
 
-        for (Core&core : cores) {
+        for (size_t i = 0; i < cores.size(); i++) {
+            Core& core = cores[i];
             if (core.proc == nullptr && !readyQueue.empty()) {
                 core.proc = readyQueue.front();
                 readyQueue.pop_front();
+                core.proc->assignCore(static_cast<int>(i));
                 core.quantumUsed = 0; 
                 core.delayLeft = 0;
             }
@@ -42,18 +44,21 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
 
         for (Core& core : cores) {
             if (core.proc != nullptr && core.proc->isFinished()) {
+                core.proc->releaseCore();
                 finished.push_back(core.proc);
                 core.proc = nullptr;
                 core.quantumUsed = 0;
                 core.delayLeft = 0;
             }
             else if (core.proc != nullptr && core.proc->isSleeping(tick)) {
+                core.proc->releaseCore();
                 sleeping.push_back(core.proc);
                 core.proc = nullptr;
                 core.quantumUsed = 0;
                 core.delayLeft = 0;
             }
             else if (core.proc != nullptr && isRR && core.quantumUsed >= quantum) {
+                core.proc->releaseCore();
                 readyQueue.push_back(core.proc);
                 core.proc = nullptr;
                 core.quantumUsed = 0;
@@ -158,38 +163,6 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
     int Scheduler::getCpuUsage() {
         std::lock_guard<std::mutex> lock(mtx);
         return countBusyCores() * 100 / numCPU;
-    }
-
-    std::vector<ProcessInfo> Scheduler::getRunningProcesses() {
-        std::lock_guard<std::mutex> lock(mtx);
-        std::vector<ProcessInfo> result;
-        for (size_t i = 0; i < cores.size(); i++) {
-            if (cores[i].proc != nullptr) {
-                ProcessInfo info;
-                info.name = cores[i].proc->getName();
-                info.coreId = i;
-                info.done = cores[i].proc->getInstructionsDone();
-                info.total = cores[i].proc->getTotalInstructions();
-                info.createdAt = cores[i].proc->getCreatedAt();
-                result.push_back(info);
-            }
-        }
-        return result;
-    }
-
-    std::vector<ProcessInfo> Scheduler::getFinishedProcesses() {
-        std::lock_guard<std::mutex> lock(mtx);
-        std::vector<ProcessInfo> result;
-        for (const auto& proc : finished) {
-            ProcessInfo info;
-            info.name = proc->getName();
-            info.coreId = -1; 
-            info.done = proc->getInstructionsDone();
-            info.total = proc->getTotalInstructions();
-            info.createdAt = proc->getCreatedAt();
-            result.push_back(info);
-        }
-        return result;
     }
 /*
     void Scheduler::printStatus() {

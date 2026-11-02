@@ -1,5 +1,5 @@
 #pragma once
-#include "MockProcess.h"
+#include "Process.h"
 #include <deque>
 #include <memory>
 #include <vector>
@@ -7,26 +7,17 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
-#include <string>
 
 struct Core {
-    std::shared_ptr<MockProcess> proc = nullptr;
+    std::shared_ptr<Process> proc = nullptr;
     int quantumUsed = 0;
     int delayLeft = 0;
-};
-
-struct ProcessInfo {
-    std::string name;
-    int coreId;
-    int done;
-    int total;
-    std::string createdAt;
 };
 
 class Scheduler {
 public:
     Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec);
-    void addProcess(std::shared_ptr<MockProcess> process);
+    void addProcess(std::shared_ptr<Process> process);
     
     void start();
     void stop();
@@ -34,9 +25,6 @@ public:
     int getCoresUsed();
     int getCoresAvailable();
     int getCpuUsage();
-
-    std::vector<ProcessInfo> getRunningProcesses();
-    std::vector<ProcessInfo> getFinishedProcesses();
     
     ~Scheduler();
     
@@ -51,9 +39,9 @@ public:
     
     std::vector<Core> cores;
     
-    std::deque<std::shared_ptr<MockProcess>> readyQueue;
-    std::vector<std::shared_ptr<MockProcess>> finished;
-    std::vector<std::shared_ptr<MockProcess>> sleeping;
+    std::deque<std::shared_ptr<Process>> readyQueue;
+    std::vector<std::shared_ptr<Process>> finished;
+    std::vector<std::shared_ptr<Process>> sleeping;
     std::vector<std::thread> coreThreads;
     
     std::atomic<bool> running{false};
