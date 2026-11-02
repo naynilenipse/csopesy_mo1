@@ -168,7 +168,7 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
                 ProcessInfo info;
                 info.name = cores[i].proc->getName();
                 info.coreId = i;
-                info.done = cores[i].proc->getinstructionsDone();
+                info.done = cores[i].proc->getInstructionsDone();
                 info.total = cores[i].proc->getTotalInstructions();
                 info.createdAt = cores[i].proc->getCreatedAt();
                 result.push_back(info);
@@ -184,7 +184,7 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
             ProcessInfo info;
             info.name = proc->getName();
             info.coreId = -1; 
-            info.done = proc->getTotalInstructions();
+            info.done = proc->getInstructionsDone();
             info.total = proc->getTotalInstructions();
             info.createdAt = proc->getCreatedAt();
             result.push_back(info);
