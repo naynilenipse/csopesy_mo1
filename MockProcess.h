@@ -36,7 +36,7 @@ class MockProcess {
         return total;
     }
 
-    int getinstructionsDone() const {
+    int getInstructionsDone() const {
         return total - count;
     }
 
