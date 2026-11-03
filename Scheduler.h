@@ -38,6 +38,9 @@ public:
 
     std::vector<ProcessInfo> getRunningProcesses();
     std::vector<ProcessInfo> getFinishedProcesses();
+    // --- added for console testing
+    std::shared_ptr<Process> findProcess(const std::string& name);
+    // ----
     
     ~Scheduler();
     

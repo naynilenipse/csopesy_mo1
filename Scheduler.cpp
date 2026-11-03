@@ -213,6 +213,23 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
     std::cout << "\n";
 }
 */
+
+// --- added for console testing
+std::shared_ptr<Process> Scheduler::findProcess(const std::string& name) {
+    std::lock_guard<std::mutex> lock(mtx);
+    for (const Core& c : cores)
+        if (c.proc && c.proc->getName() == name) return c.proc;
+    for (const auto& p : readyQueue)
+        if (p->getName() == name) return p;
+    for (const auto& p : sleeping)
+        if (p->getName() == name) return p;
+    for (const auto& p : finished)
+        if (p->getName() == name) return p;
+    return nullptr;
+}
+// ---
+
 Scheduler::~Scheduler() {
     stop();
 }
+
