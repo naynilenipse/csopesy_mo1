@@ -1,7 +1,6 @@
 // For testing console and screen :P
 
-// Build:  g++ -std=c++17 -pthread console_demo_main.cpp Console.cpp \
-//             Scheduler.cpp Process.cpp Program.cpp -o demo
+// Build: g++ -std=c++17 -pthread console_test_main.cpp Console.cpp Scheduler.cpp Process.cpp Program.cpp -o app
 
 #include "Console.h"
 #include "Scheduler.h"
