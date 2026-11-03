@@ -35,6 +35,7 @@ public:
     int getCoresUsed();
     int getCoresAvailable();
     int getCpuUsage();
+    int getTick();   // added by Role D: batch generator counts CPU ticks
 
     std::vector<ProcessInfo> getRunningProcesses();
     std::vector<ProcessInfo> getFinishedProcesses();

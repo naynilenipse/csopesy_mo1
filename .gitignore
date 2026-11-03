@@ -1,3 +1,17 @@
+# Editor
 .vscode/
+
+# Build output
 *.exe
 *.o
+*.obj
+*.out
+/csopesy
+/unit
+
+# Generated at runtime
+csopesy-log.txt
+
+# OS junk
+.DS_Store
+Thumbs.db

@@ -160,6 +160,11 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
         return numCPU - countBusyCores();
     }
 
+    int Scheduler::getTick() {
+        std::lock_guard<std::mutex> lock(mtx);
+        return tick;
+    }
+
     int Scheduler::getCpuUsage() {
         std::lock_guard<std::mutex> lock(mtx);
         return countBusyCores() * 100 / numCPU;
