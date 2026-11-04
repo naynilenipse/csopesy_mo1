@@ -7,11 +7,12 @@
 
 std::string buildReport(Scheduler& sched) {
     // Snapshot lists first so the numbers and tables agree as closely as possible.
-    int used = sched.getCoresUsed();
-    int avail = sched.getCoresAvailable();
-    int usage = sched.getCpuUsage();
-    auto running = sched.getRunningProcesses();
-    auto finished = sched.getFinishedProcesses();
+    SchedulerSnapshot snap = sched.getSnapshot();
+    int used = snap.coresUsed;
+    int avail = snap.coresAvailable;
+    int usage = snap.cpuUsage;
+    auto running = snap.runningProcesses;
+    auto finished = snap.finishedProcesses;
 
     std::ostringstream o;
     o << "CPU utilization: " << usage << "%\n"
@@ -25,6 +26,14 @@ std::string buildReport(Scheduler& sched) {
     o << "\nFinished processes:\n";
     for (const ProcessInfo& p : finished)
         o << p.name << "  (" << p.createdAt << ")  Finished  "
+          << p.done << " / " << p.total << "\n";
+    o << "\nWaiting processes:\n";
+    for (const ProcessInfo& p : snap.waitingProcesses)
+        o << p.name << "  (" << p.createdAt << ")  Waiting  "
+          << p.done << " / " << p.total << "\n";
+    o << "\nSleeping processes:\n";
+    for (const ProcessInfo& p : snap.sleepingProcesses)
+        o << p.name << "  (" << p.createdAt << ")  Sleeping  "
           << p.done << " / " << p.total << "\n";
     o << "----------------------------------------\n";
     return o.str();

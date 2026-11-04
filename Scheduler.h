@@ -9,6 +9,7 @@
 #include <condition_variable>
 #include <string>
 #include <cstdint>
+#include <unordered_map>
 
 struct Core {
     std::shared_ptr<Process> proc = nullptr;
@@ -22,6 +23,17 @@ struct ProcessInfo {
     std::uint64_t done;
     std::uint64_t total;
     std::string createdAt;
+};
+
+struct SchedulerSnapshot {
+    int tick;
+    int coresUsed;
+    int coresAvailable;
+    int cpuUsage;
+    std::vector<ProcessInfo> runningProcesses;
+    std::vector<ProcessInfo> finishedProcesses;
+    std::vector<ProcessInfo> waitingProcesses;
+    std::vector<ProcessInfo> sleepingProcesses;
 };
 
 class Scheduler {
@@ -43,6 +55,7 @@ public:
     std::shared_ptr<Process> findProcess(const std::string& name);
     // ----
     
+    SchedulerSnapshot getSnapshot();
     ~Scheduler();
     
     private:
@@ -55,7 +68,8 @@ public:
     int coresDone = 0;
     
     std::vector<Core> cores;
-    
+
+    std::unordered_map<std::shared_ptr<Process>, int> savedDelay;
     std::deque<std::shared_ptr<Process>> readyQueue;
     std::vector<std::shared_ptr<Process>> finished;
     std::vector<std::shared_ptr<Process>> sleeping;

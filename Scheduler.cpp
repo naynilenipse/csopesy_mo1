@@ -31,7 +31,13 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
                 readyQueue.pop_front();
                 core.proc->assignCore(static_cast<int>(i));
                 core.quantumUsed = 0; 
-                core.delayLeft = 0;
+                auto it = savedDelay.find(core.proc);
+                if (it != savedDelay.end()) {
+                    core.delayLeft = it->second;
+                    savedDelay.erase(it);
+                } else {
+                    core.delayLeft = 0;
+                }
             }
         }
 
@@ -57,9 +63,12 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
                 core.quantumUsed = 0;
                 core.delayLeft = 0;
             }
-            else if (core.proc != nullptr && isRR && core.quantumUsed >= quantum) {
+            else if (core.proc != nullptr && isRR && core.quantumUsed >= quantum && !readyQueue.empty()) {
                 core.proc->releaseCore();
                 readyQueue.push_back(core.proc);
+                if (core.delayLeft > 0) {
+                    savedDelay[core.proc] = core.delayLeft;
+                }
                 core.proc = nullptr;
                 core.quantumUsed = 0;
                 core.delayLeft = 0;
@@ -201,23 +210,56 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
         }
         return result;
     }
-/*
-    void Scheduler::printStatus() {
-    std::cout << "Tick " << tick << ": ";
 
-    for (size_t t = 0; t < cores.size(); t++) {
-        std::cout << "Core " << t << "=";
-        if (cores[t].proc != nullptr) {
-            std::cout << cores[t].proc->getName();
-        } else {
-            std::cout << "idle";
+    SchedulerSnapshot Scheduler::getSnapshot() {
+        std::lock_guard<std::mutex> lock(mtx);
+        SchedulerSnapshot snapshot;
+        snapshot.tick = tick;
+        snapshot.coresUsed = countBusyCores();
+        snapshot.coresAvailable = numCPU - snapshot.coresUsed;
+        snapshot.cpuUsage = countBusyCores() * 100 / numCPU;
+        
+        for (size_t i = 0; i < cores.size(); i++) {
+            if (cores[i].proc != nullptr) {
+                ProcessInfo info;
+                info.name = cores[i].proc->getName();
+                info.coreId = i;
+                info.done = cores[i].proc->getInstructionsDone();
+                info.total = cores[i].proc->getTotalInstructions();
+                info.createdAt = cores[i].proc->getCreatedAt();
+                snapshot.runningProcesses.push_back(info);
+            }
         }
-        std::cout << "  ";
-    }
+        for (const auto& proc : finished) {
+            ProcessInfo info;
+            info.name = proc->getName();
+            info.coreId = -1; 
+            info.done = proc->getInstructionsDone();
+            info.total = proc->getTotalInstructions();
+            info.createdAt = proc->getCreatedAt();
+            snapshot.finishedProcesses.push_back(info);
+        }
+        for (const auto& proc : readyQueue) {
+            ProcessInfo info;
+            info.name = proc->getName();
+            info.coreId = -1; 
+            info.done = proc->getInstructionsDone();
+            info.total = proc->getTotalInstructions();
+            info.createdAt = proc->getCreatedAt();
+            snapshot.waitingProcesses.push_back(info);
+        }
+        for (const auto& proc : sleeping) {
+            ProcessInfo info;
+            info.name = proc->getName();
+            info.coreId = -1; 
+            info.done = proc->getInstructionsDone();
+            info.total = proc->getTotalInstructions();
+            info.createdAt = proc->getCreatedAt();
+            snapshot.sleepingProcesses.push_back(info);
+        }
 
-    std::cout << "\n";
-}
-*/
+        return snapshot;
+    }
 
 // --- added for console testing
 std::shared_ptr<Process> Scheduler::findProcess(const std::string& name) {
