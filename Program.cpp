@@ -10,7 +10,8 @@
 #include <stdexcept>
 
 namespace {
-
+    
+static constexpr std::uint64_t kBigBody = 1000;  // lines in a "big" loop body
 constexpr std::uint64_t kLineCap = std::numeric_limits<std::uint64_t>::max();
 
 // a * b without wrapping past the uint64 limit.
@@ -184,7 +185,13 @@ private:
     // of r repeats over a body of k lines uses up r * k of the budget.
     void emit(std::uint64_t lines, int depth) {
         while (lines > 0) {
-            if (depth < ProgramBuilder::kMaxLoopDepth && lines >= 2 &&
+            if (depth < ProgramBuilder::kMaxLoopDepth && lines >= 2 * kBigBody) {
+                std::uint64_t repeats = lines / kBigBody;
+                b_.beginFor(static_cast<std::uint32_t>(repeats));
+                emit(kBigBody, depth + 1);
+                b_.endFor();
+                lines -= repeats * kBigBody;
+            } else if (depth < ProgramBuilder::kMaxLoopDepth && lines >= 2 &&
                 static_cast<int>(pick(0, 99)) < opt_.forPercent) {
                 std::uint64_t repeats = pick(2, std::max<std::uint64_t>(2, std::min<std::uint64_t>(opt_.maxRepeats, lines)));
                 std::uint64_t body = pick(1, std::max<std::uint64_t>(1, std::min(opt_.maxLoopBody, lines / repeats)));
@@ -201,8 +208,10 @@ private:
 
     void emitLeaf() {
         Instruction in;
-        switch (pick(0, 4)) {
+        switch (pick(0, 9)) {
             case 0:
+            case 1:
+            case 2:
                 in.op = Op::Print;
                 if (opt_.printVariables && pick(0, 1)) {
                     in.arg = valueText_;
@@ -211,18 +220,22 @@ private:
                     in.arg = hello_;
                 }
                 break;
-            case 1:
+            case 3:
+            case 4:
+            case 5:
                 in.op = Op::Declare;
                 in.dst = randomVar();
                 in.lhs = Operand{randomLiteral(), false};
                 break;
-            case 2:
-            case 3:
+            case 6:
+            case 7:
+            case 8:
                 in.op = (pick(0, 1) == 0) ? Op::Add : Op::Subtract;
                 in.dst = randomVar();
                 in.lhs = randomOperand();
                 in.rhs = randomOperand();
                 break;
+            case 9:
             default:
                 in.op = Op::Sleep;
                 in.arg = static_cast<std::uint32_t>(pick(1, std::max<std::uint8_t>(1, opt_.maxSleepTicks)));
