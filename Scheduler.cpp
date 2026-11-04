@@ -86,7 +86,7 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
                 std::unique_lock<std::mutex> lock(mtx);
                 runOneTick(lock);
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
     }
 
