@@ -13,17 +13,7 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
         readyQueue.push_back(process);
     }
 
-    void Scheduler::runOneTick(std::unique_lock<std::mutex>& lock) {
-
-        for (size_t t= 0; t < sleeping.size();) {
-            if (!sleeping[t]->isSleeping(tick)) {
-                readyQueue.push_back(sleeping[t]);
-                sleeping.erase(sleeping.begin() + t);
-            } else {
-                t++;
-            }
-        }
-
+    void Scheduler::assignCores() {
         for (size_t i = 0; i < cores.size(); i++) {
             Core& core = cores[i];
             if (core.proc == nullptr && !readyQueue.empty()) {
@@ -40,13 +30,25 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
                 }
             }
         }
+    }
+
+    void Scheduler::runOneTick(std::unique_lock<std::mutex>& lock) {
+
+        for (size_t t= 0; t < sleeping.size();) {
+            if (!sleeping[t]->isSleeping(tick)) {
+                readyQueue.push_back(sleeping[t]);
+                sleeping.erase(sleeping.begin() + t);
+            } else {
+                t++;
+            }
+        }
+
+        assignCores();
 
         coresDone = 0;
         goTick = tick;
         cvGo.notify_all();
         cvDone.wait(lock, [&] { return coresDone == numCPU; });
-
-        //printStatus(); debugging onlyyyy roar
 
         for (Core& core : cores) {
             if (core.proc != nullptr && core.proc->isFinished()) {
@@ -74,6 +76,7 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
                 core.delayLeft = 0;
             }
         }
+        assignCores();
         tick++;
     }
 

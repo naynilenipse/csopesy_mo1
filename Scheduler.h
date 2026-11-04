@@ -87,6 +87,7 @@ public:
     void loop();
     void runCore(Core& core);
     void coreWorker(int id);
+    void assignCores();
 
     int countBusyCores();
 };
