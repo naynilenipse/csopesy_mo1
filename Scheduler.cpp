@@ -249,7 +249,7 @@ Scheduler::Scheduler(int numCPU, bool isRR, int quantum, int delayPerExec)
             info.done = proc->getInstructionsDone();
             info.total = proc->getTotalInstructions();
             info.createdAt = proc->getCreatedAt();
-            snapshot.waitingProcesses.push_back(info);
+            snapshot.readyProcesses.push_back(info);
         }
         for (const auto& proc : sleeping) {
             ProcessInfo info;

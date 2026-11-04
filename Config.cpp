@@ -68,6 +68,7 @@ bool loadConfig(const std::string& path, Config& out, std::string& error) {
 
     while (std::getline(in, line)) {
         ++lineNo;
+        if (lineNo == 1 && line.rfind("\xEF\xBB\xBF", 0) == 0) line.erase(0, 3);
         std::istringstream ss(line);
         std::vector<std::string> tok;
         for (std::string t; ss >> t;) tok.push_back(t);

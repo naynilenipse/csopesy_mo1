@@ -8,9 +8,10 @@ REQUIREMENTS
     A C++17 compiler (g++ 9+ or MinGW-w64 on Windows) with pthread support.
 
 BUILD
-    make
-  or, without make:
-    g++ -std=c++17 -O2 -pthread main.cpp Console.cpp Scheduler.cpp Process.cpp Program.cpp Config.cpp BatchGenerator.cpp Report.cpp -o csopesy
+    Windows (MinGW-w64):
+        g++ -std=c++17 -O2 -static -pthread main.cpp Console.cpp Scheduler.cpp Process.cpp Program.cpp Config.cpp BatchGenerator.cpp Report.cpp -o csopesy
+    Mac / Linux:
+        (same command without -static)
 
 RUN
     Put config.txt in the folder you run from, then:
@@ -23,7 +24,7 @@ COMMANDS
     scheduler-start / -stop    generate a dummy process (p01, p02, ...) every batch-process-freq ticks
     screen -s <name>           create a process and open its screen
     screen -r <name>           reopen a running process's screen ("Process <name> not found." if finished)
-    screen -ls                 CPU utilization + running/finished processes
+    screen -ls                 CPU utilization + running/ready/sleeping/finished processes
     report-util                same as screen -ls, saved to csopesy-log.txt
     exit
 
@@ -54,9 +55,9 @@ OUTPUT FILES
     csopesy-log.txt            written by report-util in the folder you run from
 
 NOTES
-    - One CPU tick is 100 ms of real time.
-    - screen -ls / report-util list processes currently on a core as "running";
-      processes waiting in the ready queue or sleeping are not listed.
+    - One CPU tick is 20 ms of real time. (about 31 ms on Windows, due to Windows Timer Resolution)
+    - screen -ls / report-util lists running processes (with their core),
+      ready processes, sleeping processes and finished processes.
     - Generated names are p01, p02, ...; a name already used with "screen -s"
       is skipped.
 
@@ -70,4 +71,3 @@ FILES
     BatchGenerator.*    scheduler-start / scheduler-stop         (Role D)
     Report.*            screen -ls / report-util text            (Role D)
     config.txt          default parameters
-    Makefile            build script

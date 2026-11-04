@@ -27,9 +27,9 @@ std::string buildReport(Scheduler& sched) {
     for (const ProcessInfo& p : finished)
         o << p.name << "  (" << p.createdAt << ")  Finished  "
           << p.done << " / " << p.total << "\n";
-    o << "\nWaiting processes:\n";
-    for (const ProcessInfo& p : snap.waitingProcesses)
-        o << p.name << "  (" << p.createdAt << ")  Waiting  "
+    o << "\nReady processes:\n";
+    for (const ProcessInfo& p : snap.readyProcesses)
+        o << p.name << "  (" << p.createdAt << ")  Ready  "
           << p.done << " / " << p.total << "\n";
     o << "\nSleeping processes:\n";
     for (const ProcessInfo& p : snap.sleepingProcesses)

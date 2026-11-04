@@ -32,7 +32,7 @@ struct SchedulerSnapshot {
     int cpuUsage;
     std::vector<ProcessInfo> runningProcesses;
     std::vector<ProcessInfo> finishedProcesses;
-    std::vector<ProcessInfo> waitingProcesses;
+    std::vector<ProcessInfo> readyProcesses;
     std::vector<ProcessInfo> sleepingProcesses;
 };
 
