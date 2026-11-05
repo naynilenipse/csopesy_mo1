@@ -1,6 +1,6 @@
 // main.cpp - the real entry point; wires every role together.
 //
-// Build:  make            (see Makefile)   ->  ./csopesy
+// Build:  see README.txt
 #include "BatchGenerator.h"
 #include "Config.h"
 #include "Console.h"
